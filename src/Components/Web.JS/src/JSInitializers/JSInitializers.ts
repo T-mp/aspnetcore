@@ -15,7 +15,11 @@ export class JSInitializer {
     await Promise.all(initializerFiles.map(f => importAndInvokeInitializer(this, f)));
 
     function adjustPath(path: string): string {
-      // This is the same we do in JS interop with the import callback
+      if (e.startsWith("https://") || e.startsWith("http://")) {
+        return e;
+      }
+      // This is the same we do in JS interop with the import callback.
+      // But there the URL is only changed if it starts with "./"!
       const base = document.baseURI;
       path = base.endsWith('/') ? `${base}${path}` : `${base}/${path}`;
       return path;
