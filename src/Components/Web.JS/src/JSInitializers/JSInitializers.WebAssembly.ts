@@ -9,10 +9,18 @@ export async function fetchAndInvokeInitializers(bootConfig: BootJsonData, optio
   const initializers = bootConfig.resources.libraryInitializers;
   const jsInitializer = new JSInitializer();
   if (initializers) {
-    await jsInitializer.importInitializersAsync(
-      Object.keys(initializers),
-      [options, bootConfig.resources.extensions]
-    );
+    var libUrls = Object.keys(initializers);
+    if (options && options.loadBootResource) {
+      libUrls = libUrls.map(libRelUrl => {
+        var urlResult = options.loadBootResource("libraryInitializers", libRelUrl, libRelUrl, "");
+        if ("string" == typeof urlResult)
+          return urlResult;
+        else if (urlResult)
+          throw new Error(`For a 'libraryInitializers' (${libRelUrl}) resource, custom loaders must supply a URI string.`)
+        return libRelUrl;
+      });
+    }
+    await jsInitializer.importInitializersAsync(libUrls, []);
   }
 
   return jsInitializer;
